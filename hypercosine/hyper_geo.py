@@ -8,11 +8,18 @@ class BeltramiKlein:
     def __init__(self, dim):
         self._dim = dim
 
-    def contained_in(self, vector):
-        if np.linalg.norm(vector) < 1.0:
-            return True
+    def contained_in(self, vector, hyperbolic_length = None):
+        if hyperbolic_length == None:
+            if np.linalg.norm(vector) < 1.0:
+                return True
+            else:
+                return False 
         else:
-            return False   
+            euclidean_length = math.tanh(hyperbolic_length)
+            if np.linalg.norm(vector) < euclidean_length:
+                return True
+            else:
+                return False
 
     def metric_tensor(self, x, vec, wec):
         assert len(x) == self._dim and len(vec) == self._dim and len(wec) == self._dim,\
@@ -29,7 +36,7 @@ class BeltramiKlein:
     def angle(self, x, v, w):
         return angle(v, w, self.metric_tensor, x)
 
-    def rnd_points(self, nb_samples, hyper_norm = 1.0):
+    def rnd_points(self, nb_samples, hyper_norm = None):
         samples = []
 
         for i in range(0, nb_samples):
@@ -37,13 +44,13 @@ class BeltramiKlein:
 
             while is_in is False:
                 vec = np.random.uniform(-1.0, 1.0, self._dim)
-                is_in = self.contained_in(vec)
+                is_in = self.contained_in(vec, hyper_norm)
 
             samples.append(vec)
 
         return samples
 
-    def rnd_simplices(self, nb_samples, hyper_norm = 1.0):
+    def rnd_simplices(self, nb_samples, hyper_norm = None):
         samples = []
 
         for i in range(0, nb_samples):

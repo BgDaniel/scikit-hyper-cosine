@@ -47,8 +47,3 @@ class SampleCreator:
         data['surfaces_ABC'] = surfaces_ABC
 
         return pd.DataFrame(data)
-
-sampleCreator = SampleCreator(0.2)
-samples = sampleCreator.create(100)
-
-print(samples.head())
