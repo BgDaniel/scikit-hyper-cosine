@@ -1,9 +1,18 @@
 import pandas as pd
-from hyper_geo import BeltramiKlein3Dim
+from hyper_geo import BeltramiKlein2Dim, BeltramiKlein3Dim
 
 class SampleCreator:
-    def __init__(self, upper_boundary = 1.0):
-        self._beltramiKlein = BeltramiKlein3Dim()
+    def __init__(self, dim, upper_boundary = 1.0):
+        self._dim = dim
+
+        beltramiKleinModel = None
+            
+        if self._dim != 2 and self._dim != 3:
+            raise Exception('Dimension has to be equal to 2 or 3!')
+        elif self._dim == 3:
+            beltramiKleinModel = BeltramiKlein2Dim()
+        else:
+            beltramiKleinModel = BeltramiKlein3Dim()
         self._upper_boundary = upper_boundary
 
     def create(self, nb_samples=1000, save_to=None):

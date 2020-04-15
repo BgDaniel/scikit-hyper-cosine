@@ -2,7 +2,7 @@ import numpy as np
 from string import ascii_uppercase
 import math
 
-from math_helper import angle
+from math_helper import angle, FindIdealPoints
 
 class BeltramiKlein:
     def __init__(self, dim):
@@ -64,6 +64,26 @@ class BeltramiKlein3Dim(BeltramiKlein):
         assert len(a) == 3 and len(b) == 3 and len(c) == 3, 'Input vectors must have length 3!'         
         return math.pi - super().angle(b, a - b, c - b) - super().angle(c, a - c, b - c) - super().angle(a, b - a, c - a)
 
+class BeltramiKlein2Dim(BeltramiKlein):
+    def __init__(self):
+        BeltramiKlein.__init__(self, 2)
+
+    def surface_0(a):
+        assert len(a) == 2, 'Input vectors must have length 2!'        
+        return math.atanh(np.linalg.norm(a))
+
+    def surface(a, b):
+        assert len(a) == 2 and len(b) == 2, 'Input vectors must have length 2!'         
+        
+        findIdealPoints = FindIdealPoints(np.array([.02, .4]), np.array([- .2, .4]))
+        a, p, q, b = findIdealPoints.find()
+        aq = abs(np.linalg.norm(a - q))
+        pb = abs(np.linalg.norm(p - b))
+        ap = abs(np.linalg.norm(a - p))
+        qb = abs(np.linalg.norm(q - b))
+
+        return .5 * math.log((aq * pb) / (ap * qb))
+
 
 class HyperSimplex:
     def __init__(self, dim, edges):
@@ -97,18 +117,23 @@ class HyperSimplex:
         if self._surfaces != None:
             return self._surfaces
         else:
-            if self._dim != 3:
-                raise Exception('Dimension has to be equal to 3!')
-
-            beltramiKlein3Dim = BeltramiKlein3Dim()
+            beltramiKleinModel = None
+            
+            if self._dim != 2 and self._dim != 3:
+                raise Exception('Dimension has to be equal to 2 or 3!')
+            elif self._dim == 3:
+                beltramiKleinModel = BeltramiKlein2Dim()
+            else:
+                beltramiKleinModel = BeltramiKlein3Dim()
+            
             self._surfaces = {}
             
             A, B, C = list(self._edges.values())[0], list(self._edges.values())[1], list(self._edges.values())[2]
-            self._surfaces['AB'] = beltramiKlein3Dim.surface_0(A, B)
-            self._surfaces['BC'] = beltramiKlein3Dim.surface_0(B, C)
-            self._surfaces['CA'] = beltramiKlein3Dim.surface_0(C, A)
+            self._surfaces['AB'] = beltramiKleinModel.surface_0(A, B)
+            self._surfaces['BC'] = beltramiKleinModel.surface_0(B, C)
+            self._surfaces['CA'] = beltramiKleinModel.surface_0(C, A)
 
-            self._adjacent_surface = beltramiKlein3Dim.surface(A, B, C)
+            self._adjacent_surface = beltramiKleinModel.surface(A, B, C)
 
         return self._surfaces, self._adjacent_surface
 
