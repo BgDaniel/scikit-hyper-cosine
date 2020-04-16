@@ -59,6 +59,13 @@ class BeltramiKlein:
 
         return samples
 
+def check_length(f):
+    def _f(self, a, edges):
+        for edge in edges:
+            assert len(edge) == 3, 'All input vectors must have length 3!'
+        return f(edges)
+    return _f
+
 class BeltramiKlein3Dim(BeltramiKlein):
     def __init__(self):
         BeltramiKlein.__init__(self, 3)
@@ -98,6 +105,17 @@ class BeltramiKlein2Dim(BeltramiKlein):
 
         return .5 * math.log((rq * ps) / (rp * qs))
 
+def set_values(prop):
+    def _prop(self):
+        prop_name = prop.__name__
+        prop_value = getattr(self, "_" + prop_name)
+        if prop_value != None:
+            return prop_value
+        else:
+            prop_value = prop(self)
+            setattr(self, "_" + prop_name, prop_value)
+            return prop_value
+    return _prop
 
 class HyperSimplex:
     @property
@@ -134,44 +152,36 @@ class HyperSimplex:
         else:
             self._beltramiKleinModel = BeltramiKlein3Dim()
 
+    @set_values
     def angles(self):
-        if self._angles != None:
-            return self._angles
-        else:
-            self._angles = {}
+        self._angles = {}
 
-            for i, edge in enumerate(self._edges.values()):
-                A = edge
-                name_A = list(self._edges.keys())[i]
-                B =  list(self._edges.values())[(i + 1) % self._dim]
-                name_B = list(self._edges.keys())[(i + 1) % self._dim]
-
-                self._angles[name_A + name_B] = angle(A, B)
+        for i, edge in enumerate(self._edges.values()):
+            A = edge
+            name_A = list(self._edges.keys())[i]
+            B =  list(self._edges.values())[(i + 1) % self._dim]
+            name_B = list(self._edges.keys())[(i + 1) % self._dim]
+            self._angles[name_A + name_B] = angle(A, B)
 
         return self._angles
 
+    @set_values
     def surfaces(self):
-        if self._surfaces != None:
-            return self._surfaces
-        else:            
-            self._surfaces = {}
+        self._surfaces = {}
             
-            for i, edge in enumerate(self._edges.values()):
-                A = edge
-                name_A = list(self._edges.keys())[i]
-                B =  list(self._edges.values())[(i + 1) % self._dim]
-                name_B = list(self._edges.keys())[(i + 1) % self._dim]
+        for i, edge in enumerate(self._edges.values()):
+            A = edge
+            name_A = list(self._edges.keys())[i]
+            B =  list(self._edges.values())[(i + 1) % self._dim]
+            name_B = list(self._edges.keys())[(i + 1) % self._dim]
+            self._surfaces[name_A + name_B] = self._beltramiKleinModel.surface_0(A, B)
 
-                self._surfaces[name_A + name_B] = self._beltramiKleinModel.surface_0(A, B)
-
-            return self._surfaces
-
-        def adjacent_surface(self):
-            if self._adjacent_surface != None:
-                return self._surfaces
-            else:
-                self._adjacent_surface = self._beltramiKleinModel.surface(self._edges.values())
-                return self._adjacent_surface
+        return self._surfaces            
+            
+    @set_values
+    def adjacent_surface(self):
+        self._adjacent_surface = self._beltramiKleinModel.surface(self._edges.values())
+        return self._adjacent_surface
 
 
 
