@@ -1,5 +1,5 @@
 import unittest
-from hyperCosine.sample_factory import SampleCreator
+from sample_factory import SampleCreator
 
 class HyperbolicLawOfCosine2Dim(unittest.TestCase):
     def test_hyberbolic_law_of_cosine_2dim(self):
