@@ -9,8 +9,10 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 # Create a Sequential model
 model = Sequential()
-model.add(Dense(1, input_shape=(6,), activation='relu'))
-model.add(Dense(2, activation='relu'))
+model.add(Dense(256, input_shape=(6,), activation='relu'))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(64, activation='relu'))
 model.add(Dense(1, activation='relu'))
 model.compile(loss='mse', optimizer='adam', metrics = ['mse'])
 
