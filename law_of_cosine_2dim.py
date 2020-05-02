@@ -6,6 +6,9 @@ import numpy as np
 from data import samples as sp
 import matplotlib as mplt
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+from data.trigonometric_laws.hyper_triangles import *
+
+DEVIATION = 10e-5
 
 # Create a Sequential model
 model = Sequential()
@@ -19,6 +22,14 @@ model.compile(loss='mse', optimizer='adam', metrics = ['mse'])
 model.summary()
 
 X, y = sp.get_data('triangles.csv', 'A', 'B', 'Gamma', target='C')
+
+# cross check data
+for i, _X in enumerate(X):
+    deviation = abs(LAW_OF_COSINE_I3(_X[0], _X[1], _X[2], y[i]) - .0)
+    assert deviation < DEVIATION, 'Deviation too high for triangle number {0}: {1}'.format(i, deviation) 
+
+
+
 X_train, X_test, y_train, y_test = ms.train_test_split(X, y, test_size = 0.1, random_state=31)
 
 
