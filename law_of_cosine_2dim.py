@@ -18,7 +18,7 @@ model.compile(loss='mse', optimizer='adam', metrics = ['mse'])
 
 model.summary()
 
-X, y = sp.get_data('SurfaceABD', 'SurfaceACD', 'SurfaceBCD', 'AngleABCD', 'AngleACBD', 'AngleADBC', target='SurfaceABC')
+X, y = sp.get_data('triangles.csv', 'A', 'B', 'Gamma', target='C')
 X_train, X_test, y_train, y_test = ms.train_test_split(X, y, test_size = 0.1, random_state=31)
 
 
