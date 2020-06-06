@@ -9,6 +9,8 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from data.trigonometric_laws.hyper_triangles import *
 from sklearn import preprocessing
 from matplotlib import pyplot as plt
+import seaborn as sbn
+import pandas as pd
 
 DEVIATION = 10e-5
 cross_check = False
@@ -17,14 +19,14 @@ cross_check = False
 model = Sequential()
 model.add(Dense(6, input_shape=(3,), activation='sigmoid'))
 model.add(Dense(36, activation='sigmoid'))
+model.add(Dense(36, activation='sigmoid'))
 model.add(Dense(6, activation='sigmoid'))
-model.add(Dense(3, activation='sigmoid'))
 model.add(Dense(1, activation='sigmoid'))
-model.compile(loss='mse', optimizer='adam', metrics = ['mse'])
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics = ['mse'])
 
 model.summary()
 
-X, y = sp.get_data('triangles.csv', 'A', 'B', 'Gamma', target='C')
+data, X, y = sp.get_data('triangles.csv', 'A', 'B', 'Gamma', target='C')
 
 # cross check data
 if cross_check:
@@ -32,8 +34,19 @@ if cross_check:
         deviation = abs(LAW_OF_COSINE_I3(_X[0], _X[1], _X[2], y[i]) - .0)
         assert deviation < DEVIATION, 'Deviation too high for triangle number {0}: {1}'.format(i, deviation) 
 
+# get ranges
+a_min, a_max = min(X[:,0]), max(X[:,0])
+b_min, b_max = min(X[:,1]), max(X[:,1])
+gamma_min, gamma_max = min(X[:,2]), max(X[:,2])
+c_min, c_max = min(y), max(y)
+
+# inspect dependencies
+sbn.pairplot(data, diag_kind="kde")
+plt.show()
+
+
 # scale data to range [0,1]
-X_scaler = preprocessing.MinMaxScaler()
+X_scaler = preprocessing.MinMaxScaler(feature_range=(- 5.0, + 5.0))
 X_scaler.fit(X)
 X_scaled = X_scaler.transform(X)
 
@@ -47,7 +60,7 @@ y_scaled = y_scaler.transform(y)
 X_train, X_test, y_train, y_test = ms.train_test_split(X_scaled, y_scaled, test_size = 0.1, random_state=31)
 
 # define early stopping by looking at loss function ('mse')
-monitor_val_acc = EarlyStopping(monitor = 'mse', patience=3, min_delta=10e-6)
+monitor_val_acc = EarlyStopping(monitor = 'binary_crossentropy', patience=3, min_delta=10e-6)
 
 # train model
 history = model.fit(X_train, y_train, epochs=100, callbacks=[monitor_val_acc], validation_data=(X_test, y_test))
@@ -57,8 +70,8 @@ history = model.fit(X_train, y_train, epochs=100, callbacks=[monitor_val_acc], v
 plot = False
 
 if plot:
-    plt.plot(history.history['mse'])    
-    plt.plot(history.history['val_mse'])
+    plt.plot(history.history['binary_crossentropy'])    
+    plt.plot(history.history['val_binary_crossentropy'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
